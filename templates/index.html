@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Monster</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Task Evolve Logo" width="250" height="150">
+
+        <!-- タスク追加フォーム -->
+        <form action="/add_task" method="POST" id="task-form">
+            <div id="task-inputs">
+                <div class="form-group">
+                    <input type="text" name="task_titles" placeholder="新しいタスクを追加" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="number" name="task_priority" placeholder="優先度 (1から高, 5から低, 未入力の場合は3)" min="1" max="5">
+            </div>
+            <div class="form-group">
+                <input type="date" name="task_deadline">
+            </div>
+            <button class="btn-add-task" type="submit">タスクをToDoに追加</button>
+            <button class="btn-add-input" type="button">タスク入力欄を増やす</button>
+        </form>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const addTaskButton = document.querySelector('.btn-add-input'); // クラス名を修正
+                const taskInputsContainer = document.getElementById('task-inputs');
+                
+                addTaskButton.addEventListener('click', function () {
+                    const newTaskInput = document.createElement('div');
+                    newTaskInput.classList.add('form-group');
+                    newTaskInput.innerHTML = `
+                        <input type="text" name="task_titles" placeholder="新しいタスクを追加" required>
+                        <button class="btn btn-remove" type="button">入力欄削除</button>
+                    `;
+                    taskInputsContainer.appendChild(newTaskInput);
+        
+                    // マイナスボタンのクリックイベントを追加
+                    const removeButton = newTaskInput.querySelector('.btn-remove');
+                    removeButton.addEventListener('click', function () {
+                        taskInputsContainer.removeChild(newTaskInput);
+                    });
+                });
+            });
+        </script>
+        
+
+        <!-- タスク表示と操作 -->
+        <div class="task-list-container">
+            <ul class="task-list">
+                {% for task in tasks %}
+                    <li class="task {% if task.completed %}completed{% endif %}">
+                        <div class="task-title">
+                            {{ task.title }}
+                        </div>
+                        <div class="task-details">
+                            <span class="priority">優先度: {{ task.priority }}</span>
+                            {% if task.deadline %}
+                                <span class="deadline">締切日: {{ task.deadline.strftime('%Y-%m-%d') }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="task-actions">
+                            <a href="/delete_task/{{ loop.index0 }}" onclick="return confirm('このタスクを削除しますか？')">削除</a>
+                            {% if not task.completed %}
+                                <a href="/complete_task/{{ loop.index0 }}">完了</a>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
